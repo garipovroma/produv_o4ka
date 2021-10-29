@@ -1,0 +1,5 @@
+data_path: 'data/'
+files: ['chronom', 'chugun', 'gas', 'lom', 'plavki', 'produv', 'sip']
+model_tst_path: 'model_tst'
+model_C_path: 'model_C'
+submission_path: 'first_submission.csv'
