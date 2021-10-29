@@ -14,9 +14,9 @@ def read_data(suffix):
     data = {}
     for file in files:
         data[file] = pd.read_csv(f'{config["data_path"]}{file}_{suffix}.csv')
-    return data
     data['chronom'].drop(['Unnamed: 0'], axis = 1, inplace = True)
-    
+    return data
+
 def preprocess_data(data):
     X = data['chugun'].drop(['DATA_ZAMERA'], axis = 1)
     for file in files:
