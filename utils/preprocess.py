@@ -1,6 +1,11 @@
 import pandas as pd
 import numpy as np
 import yaml
+import tsfel
+from sklearn.feature_selection import VarianceThreshold
+from tqdm import tqdm
+import warnings
+warnings.filterwarnings("ignore")
 
 with open('config.yaml') as f:
     config = yaml.load(f, yaml.FullLoader)
@@ -21,15 +26,22 @@ def read_data(suffix):
 def preprocess_data(data):
     data['reduced_gas'] = ts_preproc(data['reduced_gas'], 'Time')
     data['reduced_produv'] = ts_preproc(data['reduced_produv'], 'SEC')
+    data['extracted_gas'] = ts_extract_features(data['reduced_gas'])
+    data['extracted_produv'] = ts_extract_features(data['reduced_produv'])
     X = data['chugun'].drop(['DATA_ZAMERA'], axis = 1)
     for file in files:
         if file == 'chugun':
             continue
-        aggregated_data = data[file].groupby('NPLV').agg([np.mean, np.sum, np.min, np.max])
+        aggregated_data = data[file].groupby('NPLV').agg([np.mean, np.sum, np.min, np.max, np.median, 'last', 'first', 'idxmax', 'idxmin'])
         aggregated_data.columns = list(map(lambda x: x[0] + "_" + x[1], aggregated_data.columns))
         X = X.merge(aggregated_data, on = 'NPLV', suffixes=('',f'_{file}'))
+    X = X.merge(data['extracted_gas'], on = 'NPLV', suffixes=('',f'_extracted_gas'))
+    X = X.merge(data['extracted_produv'], on = 'NPLV', suffixes=('',f'_extracted_produv'))
     return X
 
+def read_preprocessed_data():
+    return pd.read_csv(config['data_path'] + 'preprocessed_train.csv'), pd.read_csv(config['data_path'] + 'preprocessed_test.csv')
+    
 def ts_preproc(df, time_col):
     df[time_col] = pd.to_datetime(df[time_col])
     df = df.set_index(time_col)
@@ -47,3 +59,29 @@ def reduce_ts(ts_data:pd.DataFrame, chronom:pd.DataFrame) -> pd.DataFrame:
         new_ts_data = pd.concat((new_ts_data,curr_new_ts))
         
     return new_ts_data
+
+def ts_extract_features(ts_df:pd.DataFrame) -> pd.DataFrame:
+    header_names = ts_df.drop(['NPLV'], axis = 1).columns
+    cfg_file = tsfel.get_features_by_domain()
+    extr_ts = pd.DataFrame()
+    for NPLV in tqdm(ts_df.NPLV.unique()):
+        curr_ts = ts_df[ts_df['NPLV'] == NPLV]
+        curr_ts = curr_ts.drop(['NPLV'], axis = 1)
+
+        feat_for_cts = tsfel.time_series_features_extractor(cfg_file, curr_ts, header_names = header_names, verbose=0)
+        feat_for_cts['NPLV'] = NPLV
+
+        extr_ts = pd.concat((extr_ts,feat_for_cts))
+    
+    return extr_ts
+
+def ts_select_features(feat_df_train:pd.DataFrame, feat_df_test:pd.DataFrame) -> pd.DataFrame:
+    corr_features = tsfel.correlated_features(feat_df_train)
+    feat_df_train.drop(corr_features, axis=1, inplace=True)
+    feat_df_test.drop(corr_features, axis=1, inplace=True)
+    
+    selector = VarianceThreshold()
+    selector.fit(feat_df_train)
+    new_features = selector.get_feature_names_out()
+    
+    return feat_df_train[new_features], feat_df_test[new_features]
