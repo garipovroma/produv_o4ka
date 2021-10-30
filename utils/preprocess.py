@@ -22,12 +22,22 @@ def read_data(suffix):
         data[file] = pd.read_csv(f'{config["data_path"]}{file}_{suffix}.csv')
     data['chronom'].drop(['Unnamed: 0'], axis = 1, inplace = True)
     return data
-    
+
+def chronom_preprocess_cat_features(chronom, X):
+    dict_1 = chronom["NOP"].value_counts().to_dict()
+    ok_col_values = {'Вхождение в гр.МНЛЗ', 'Завалка лома', 'Заливка чугуна', 'Замена фурмы', 'Замер положения фурм',
+     'Наведение гарнисажа', 'Наложение продувки', 'Неиспр. АСУ и КИПиА', 'Неиспр. механ. обор.', 'Неиспр. электр. обор',
+     'Неиспр. энерг. обор', 'Обрыв горловины', 'Ожидание стальковша', 'Ожидание шл.чаш', 'Осмотр конвертера', 
+                     'Отсут. своб.разл.пл.', 'Отсутствие O2', 'Отсутствие мет.шихты', 'Отсутствие чугуна', 'ППР', 
+                     'Подварка  футеровки', 'Полусухое торкрет.', 'Продувка', 'Ремонт летки'}
+    for k, v in dict_1.items():
+        if k in ok_col_values:
+            temp = chronom.groupby('NPLV').apply(lambda grp: np.any(grp['NOP'] == k)).to_frame()
+            temp.columns = [k + "_gr"]
+            X = X.merge(temp, on='NPLV', suffixes='')
+    return X    
+
 def preprocess_data(data):
-    data['reduced_gas'] = ts_preproc(data['reduced_gas'], 'Time')
-    data['reduced_produv'] = ts_preproc(data['reduced_produv'], 'SEC')
-    data['extracted_gas'] = ts_extract_features(data['reduced_gas'])
-    data['extracted_produv'] = ts_extract_features(data['reduced_produv'])
     X = data['chugun'].drop(['DATA_ZAMERA'], axis = 1)
     for file in files:
         if file == 'chugun':
@@ -35,8 +45,19 @@ def preprocess_data(data):
         aggregated_data = data[file].groupby('NPLV').agg([np.mean, np.sum, np.min, np.max, np.median, 'last', 'first', 'idxmax', 'idxmin'])
         aggregated_data.columns = list(map(lambda x: x[0] + "_" + x[1], aggregated_data.columns))
         X = X.merge(aggregated_data, on = 'NPLV', suffixes=('',f'_{file}'))
+        
+    X = chronom_preprocess_cat_features(data['chronom'], X)
+    
+    data['reduced_gas'] = ts_preproc(data['reduced_gas'], 'Time')
+    data['reduced_produv'] = ts_preproc(data['reduced_produv'], 'SEC')
+    data['extracted_gas'] = ts_extract_features(data['reduced_gas'])
+    data['extracted_produv'] = ts_extract_features(data['reduced_produv'])
+    
     X = X.merge(data['extracted_gas'], on = 'NPLV', suffixes=('',f'_extracted_gas'))
     X = X.merge(data['extracted_produv'], on = 'NPLV', suffixes=('',f'_extracted_produv'))
+    X = X.merge(data['cat_lom'], on='NPLV', suffixes=('', f'_cat_lom'))
+    X = X.merge(data['cat_sip'], on='NPLV', suffixes=('', f'_cat_sip'))
+
     return X
 
 def read_preprocessed_data():
@@ -85,3 +106,12 @@ def ts_select_features(feat_df_train:pd.DataFrame, feat_df_test:pd.DataFrame) ->
     new_features = selector.get_feature_names_out()
     
     return feat_df_train[new_features], feat_df_test[new_features]
+
+
+def preprocess_cat_features():
+    X = train_data['chronom']
+    for file in files:
+        cols = list(train_data[file].select_dtypes(['object', 'string']).columns)
+
+        cols.append('NPLV')
+        print(file, cols)
