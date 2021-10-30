@@ -35,7 +35,7 @@ def ts_preproc(df, time_col):
     df = df.set_index(time_col)
     return df
 
-def reduse_to_produv(ts_data:pd.DataFrame, chronom:pd.DataFrame) -> pd.DataFrame:
+def reduce_ts(ts_data:pd.DataFrame, chronom:pd.DataFrame) -> pd.DataFrame:
     new_ts_data = pd.DataFrame()
     for NPLV in ts_data.NPLV.unique():
         curr_new_ts = ts_data[ts_data['NPLV'] == NPLV][(ts_data[ts_data['NPLV'] == NPLV].index > 
