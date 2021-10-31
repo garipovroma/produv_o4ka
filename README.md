@@ -14,7 +14,7 @@
 
 # Задача 1 – Продуйте металл через Data Science😈💨💨🍏🍎
 
-[Ссылка на условие задачи](https://russianhackers.notion.site/1-Data-Science-4cc89ba42de1429bbac316f59bf07a3b#f8396dc52eb34323a0c1ab9fce9602c7)
+[Ссылка на условия задачи](https://russianhackers.notion.site/1-Data-Science-4cc89ba42de1429bbac316f59bf07a3b#f8396dc52eb34323a0c1ab9fce9602c7)
 
 ### Репозиторий
 
