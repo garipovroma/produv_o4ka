@@ -1,4 +1,4 @@
-random_state: 993
+random_state: 600
 data_path: 'data/'
 files: ['chronom', 'chugun', 'reduced_gas', 'lom', 'plavki', 'reduced_produv', 'sip', 'cat_lom', 'cat_sip']
 model_tst_path: 'model_tst'
