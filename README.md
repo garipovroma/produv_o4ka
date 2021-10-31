@@ -1,4 +1,5 @@
-# EVRAZ AI CHALLENGE 
+# EVRAZ AI CHALLENGE
+   [EVRAZ AI CHALLENGE](https://hackathon.evraz.com/)
 
 # ML BOTALKA TEAM
 
