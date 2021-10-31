@@ -1,6 +1,7 @@
 random_state: 993
 data_path: 'data/'
-files: ['chronom', 'chugun', 'reduced_gas', 'lom', 'plavki', 'reduced_produv', 'sip', 'cat_lom', 'cat_sip']
+files: ['chronom', 'chugun', 'reduced_gas', 'lom', 'plavki', 'reduced_produv', 'sip', 'cat_lom', 'cat_sip', 'reduced_gas', 'reduced_produv']
 model_tst_path: 'model_tst'
 model_C_path: 'model_C'
 submission_path: 'first_submission.csv'
+cat_features_list : ['plavka_TIPE_FUR', 'plavka_TIPE_GOL', 'plavka_NAPR_ZAD', 'plavka_NMZ']

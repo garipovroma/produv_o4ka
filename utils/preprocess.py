@@ -37,10 +37,17 @@ def chronom_preprocess_cat_features(chronom, X):
             X = X.merge(temp, on='NPLV', suffixes='')
     return X    
 
+def get_cat_features_list(df):
+    result = []
+    selected = list(df.select_dtypes(['bool', 'object']))
+    result += selected
+    result.append('cluster_label')
+    return result.copy()
+
 def preprocess_data(data):
     X = data['chugun'].drop(['DATA_ZAMERA'], axis = 1)
     for file in files:
-        if file == 'chugun':
+        if file in ['chugun', 'plavki']:
             continue
         aggregated_data = data[file].groupby('NPLV').agg([np.mean, np.sum, np.min, np.max, np.median, 'last', 'first', 'idxmax', 'idxmin'])
         aggregated_data.columns = list(map(lambda x: x[0] + "_" + x[1], aggregated_data.columns))
@@ -48,15 +55,17 @@ def preprocess_data(data):
         
     X = chronom_preprocess_cat_features(data['chronom'], X)
     
-    data['reduced_gas'] = ts_preproc(data['reduced_gas'], 'Time')
-    data['reduced_produv'] = ts_preproc(data['reduced_produv'], 'SEC')
-    data['extracted_gas'] = ts_extract_features(data['reduced_gas'])
-    data['extracted_produv'] = ts_extract_features(data['reduced_produv'])
+#     data['reduced_gas'] = ts_preproc(data['reduced_gas'], 'Time')
+#     data['reduced_produv'] = ts_preproc(data['reduced_produv'], 'SEC')
+#     data['extracted_gas'] = ts_extract_features(data['reduced_gas'])
+#     data['extracted_produv'] = ts_extract_features(data['reduced_produv'])
     
-    X = X.merge(data['extracted_gas'], on = 'NPLV', suffixes=('',f'_extracted_gas'))
-    X = X.merge(data['extracted_produv'], on = 'NPLV', suffixes=('',f'_extracted_produv'))
+#     X = X.merge(data['extracted_gas'], on = 'NPLV', suffixes=('',f'_extracted_gas'))
+#     X = X.merge(data['extracted_produv'], on = 'NPLV', suffixes=('',f'_extracted_produv'))
     X = X.merge(data['cat_lom'], on='NPLV', suffixes=('', f'_cat_lom'))
     X = X.merge(data['cat_sip'], on='NPLV', suffixes=('', f'_cat_sip'))
+    X = X.merge(data['cat_sip'], on='NPLV', suffixes=('', f'_cat_sip'))
+
 
     return X
 
