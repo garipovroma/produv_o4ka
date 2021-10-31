@@ -33,7 +33,7 @@
    1. `reduce_ts.ipynb` -- редьюсинг данных из `produv,csv` и `gas.csv`
    2. `clustering.ipynb` -- применение кластеризации для генерации лейблов для каждой плавки 
    3. `plavki.ipynb` -- применение target encoding для генерации фичей
-   4. `chronom.ipynb` -- генерация фичей из таблицы `chronom.csv`
+   4. `chronom_duration.ipynb`, `chronom_ts.ipynb` -- генерация фичей из таблицы `chronom.csv`
    5. `preprocess.ipynb` -- для объединения всех полученных данных
 3. Для обучения модели запускаем все ячейки ноутбука `train.ipynb`
 4. Для предсказания результата на тестовых данных запускаем ноутбук `predict.ipynb`
