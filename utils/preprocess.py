@@ -41,7 +41,7 @@ def get_cat_features_list(df):
     result = []
     selected = list(df.select_dtypes(['bool', 'object']))
     result += selected
-    result.append('cluster_label')
+    result.append('labels')
     return result.copy()
 
 def preprocess_data(data):
